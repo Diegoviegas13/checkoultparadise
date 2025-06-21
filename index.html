@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pagamento via PIX</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Roboto', sans-serif;
+      background: var(--cor-fundo);
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 500px;
+      margin: 2rem auto;
+      background: var(--cor-fundo);
+      padding: 2rem;
+      border-radius: 10px;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+      text-align: center;
+      color: white;
+    }
+    .fade-in {
+      animation: fadeIn 0.8s ease-in-out forwards;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .seguro-badge {
+margin-top: 30px;
+      background-color: #28a745;
+      color: white;
+      font-weight: bold;
+      padding: 6px 12px;
+      border-radius: 5px;
+      font-size: 14px;
+      margin-bottom: 1rem;
+      display: inline-block;
+    }
+    .confirm-box {
+      background: #e6f4ea;
+      border: 1px solid var(--cor-principal);
+      color: #1a452b;
+      padding: 12px 16px;
+      font-size: 14px;
+      border-radius: 10px;
+      margin-bottom: 16px;
+    }
+    .confirm-box strong {
+      color: var(--cor-principal);
+    }
+    #banner {
+      max-width: 100%;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+    }
+    .section-title {
+      color: var(--cor-principal);
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .qrcode-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+    .qrcode-container img {
+      max-width: 220px;
+    }
+    .input-group {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto;
+      width: 100%;
+    }
+    .input-group input {
+      width: 65%;
+      padding: 10px;
+      font-size: 14px;
+      border: 1px solid #ccc;
+      border-right: none;
+      border-radius: 6px 0 0 6px;
+      outline: none;
+      height: 35px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      background: #fff;
+      box-sizing: border-box;
+    }
+    .copy-btn {
+      width: 25%;
+      background-color: var(--cor-principal);
+      color: white;
+      font-weight: bold;
+      font-size: 14px;
+      height: 45px;
+      border: none;
+      border-radius: 0 6px 6px 0;
+      cursor: pointer;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    .copy-btn.copied {
+      background-color: #2ecc71;
+    }
+    .payment-info {
+      border: 2px solid var(--cor-principal);
+      border-radius: 8px;
+      padding: 1rem;
+      text-align: left;
+      background: #fafafa;
+      color: #000;
+      margin-top: 1rem;
+    }
+    .info-item {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.95rem;
+      margin-bottom: 0.5rem;
+    }
+    .info-label {
+      font-weight: bold;
+    }
+    .warning {
+      color: #e74c3c;
+      font-weight: bold;
+      font-size: 14px;
+      text-align: center; }
+
+.countdown-title {
+  font-size: 14px;
+  color: white;
+  margin-bottom: 5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.timer {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+}
+
+.timer span {
+  background-color: #000;
+  padding: 5px 10px;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: bold;
+  color: #00FF94;
+  min-width: 30px;
+  text-align: center;
+}
+
+#loading-message {
+  font-size: 16px;
+  margin-top: 30px;
+  color: var(--cor-principal);
+}
+
+    }
+
+
+  </style>
+<script>
+  const VALOR_PAGAMENTO = 1990;
+  const PIXEL_ID = "485067589";
+  const REDIRECT_URL = "https://googlo.com";
+  const BANNER_ATIVO = true === true || "true" === "true";
+  const COR_BACKGROUND_CONTAINER = "#f5f5f5";
+  const COR_TEXTO = "#000000";
+</script>
+
+
+</head>
+<body>
+
+
+
+  <div class="container">
+    <div class="seguro-badge">🔒 Ambiente Seguro</div>
+    <div class="confirm-box" id="confirm-text">Gerando dados...</div>
+
+    <div id="loading-message">
+      <strong>Gerando QR Code...</strong>
+    </div>
+
+<div id="conteudo-pix" style="display: none;">
+
+  <div id="banner-container" style="display: none;">
+  <img id="banner" src="images/bannergerador.png" alt="Banner do Produto" />
+</div>
+
+
+
+  <div class="section-title">📱 Escaneie o QRCode abaixo</div>
+
+
+
+
+
+      <div class="qrcode-container">
+        <img id="qrcode-img" alt="QR Code PIX">
+      </div>
+      <div class="section-title">📋 Ou copie o código PIX</div>
+      <div class="input-group">
+        <input type="text" id="pix-code" readonly title="Carregando...">
+        <button type="button" class="copy-btn" id="copy-btn">Copiar</button>
+      </div>
+      <div class="payment-info">
+        <div class="info-item"><span class="info-label">🔥 Valor:</span><span id="VALOR_PAGAMENTO">R$ 0,00</span></div>
+        <div class="info-item"><span class="info-label">🕒 Válido até:</span><span id="expiration">--/--/---- --:--</span></div>
+      </div>
+      <p class="warning">⚠️ Após efetuar o pagamento, volte para esta página para receber o acesso imediatamente.</p>
+    </div>
+  </div>
+<script>
+  !function(f,b,e,v,n,t,s)
+  {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+  n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+  if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+  n.queue=[];t=b.createElement(e);t.async=!0;
+  t.src=v;s=b.getElementsByTagName(e)[0];
+  s.parentNode.insertBefore(t,s)}(window, document,'script',
+  'https://connect.facebook.net/en_US/fbevents.js');
+</script>
+
+  <script>
+ const utms = new URLSearchParams(window.location.search);
+const utmObj = Object.fromEntries(utms.entries());
+
+
+     function gerarCPF() {
+      let cpf = '';
+      for (let i = 0; i < 9; i++) cpf += Math.floor(Math.random() * 10);
+      let soma = 0;
+      for (let i = 0; i < 9; i++) soma += parseInt(cpf.charAt(i)) * (10 - i);
+      let resto = 11 - (soma % 11);
+      cpf += (resto > 9 ? 0 : resto);
+      soma = 0;
+      for (let i = 0; i < 10; i++) soma += parseInt(cpf.charAt(i)) * (11 - i);
+      resto = 11 - (soma % 11);
+      cpf += (resto > 9 ? 0 : resto);
+      return cpf;
+    }
+
+     function gerarNomeCompleto() {
+      const nomes = ['Lucas', 'João', 'Mariana', 'Bruna', 'Carlos', 'Ana'];
+      const sobrenomes = ['Silva', 'Santos', 'Oliveira', 'Souza'];
+      return `${nomes[Math.floor(Math.random()*nomes.length)]} ${sobrenomes[Math.floor(Math.random()*sobrenomes.length)]}`;
+    }
+
+     function gerarTelefone() {
+      return `11${Math.floor(900000000 + Math.random() * 99999999)}`;
+    }
+
+     function gerarEmail(nome) {
+      return nome.toLowerCase().replace(/\s+/g, '') + Math.floor(Math.random()*1000) + '@gmail.com';
+    }
+
+async function verificarStatus(transactionHash) {
+  try {
+    const res = await fetch(`verificar_status.php?hash=${transactionHash}`);
+    const data = await res.json();
+console.log("Resposta da API:", data);
+
+    if (data.payment_status === 'paid') {
+ console.log('Pagamento aprovado! Disparando pixel e redirecionando...');
+
+      clearInterval(window.__verificaStatusInterval__);
+
+
+fbq('track', 'Purchase', {
+  value: VALOR_PAGAMENTO,
+  currency: 'BRL'
+});
+
+
+setTimeout(() => {
+  window.location.href = REDIRECT_URL;
+}, 500);
+
+
+    }
+  } catch (e) {
+    console.error("Erro ao verificar status:", e);
+  }
+}
+
+
+
+window.onload = () => {
+document.documentElement.style.setProperty('--cor-fundo', COR_BACKGROUND_CONTAINER);
+document.documentElement.style.setProperty('--cor-principal', COR_TEXTO);
+
+
+  const urlParams = new URLSearchParams(window.location.search);
+
+  const nomeParam = urlParams.get("nome");
+  const emailParam = urlParams.get("email");
+
+  const nome = nomeParam && nomeParam.trim() !== "" ? nomeParam : gerarNomeCompleto();
+  const email = emailParam && emailParam.trim() !== "" ? emailParam : gerarEmail(nome);
+  const cpf = gerarCPF();
+  const telefoneParam = urlParams.get("user_phone");
+  const telefone = telefoneParam && /^\d{10,11}$/.test(telefoneParam)
+    ? telefoneParam
+    : gerarTelefone();
+
+  const utmObj = Object.fromEntries(urlParams.entries());
+
+fbq('init', PIXEL_ID);
+fbq('track', 'PageView');
+
+fbq('track', 'InitiateCheckout', {
+  value: VALOR_PAGAMENTO / 100,
+  currency: 'BRL'
+});
+
+
+  // Texto condicional
+  if (nomeParam && emailParam) {
+    document.getElementById('confirm-text').innerHTML =
+     `Enviaremos seu acesso por email após a confirmação.`;
+  } else {
+    document.getElementById('confirm-text').innerHTML =
+      `Enviaremos seu acesso por email após a confirmação.`;
+  }
+  if (BANNER_ATIVO) {
+    document.getElementById('banner-container').style.display = 'block';
+  }
+
+
+
+
+
+console.log('UTMs:', utmObj);
+
+
+  fetch('geradorparadise.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name: nome, email, cpf, phone: telefone, utm: utmObj, amount: VALOR_PAGAMENTO })
+  })
+  .then(res => res.json())
+  .then(data => {
+console.log("Resposta completa do geradormonster:", data);
+
+
+    if (!data.success) throw new Error(data.error || 'Erro ao gerar cobrança');
+
+    const qrText = data.pix_data.qrCodeText;
+    const qrImage = `https://quickchart.io/qr?text=${encodeURIComponent(qrText)}`;
+    const transactionHash = data.transaction_hash;
+if (!transactionHash) {
+  throw new Error("Hash da transação não recebido. Não é possível verificar status.");
+}
+
+    document.getElementById('qrcode-img').src = qrImage;
+    document.getElementById('pix-code').value = qrText;
+    document.getElementById('pix-code').title = qrText;
+    document.getElementById('VALOR_PAGAMENTO').textContent = (VALOR_PAGAMENTO / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+
+    const expiration = new Date(Date.now() + 300 * 1000);
+
+    document.getElementById('expiration').textContent = expiration.toLocaleString("pt-BR");
+
+
+
+
+
+
+
+
+    document.getElementById('copy-btn').onclick = () => {
+      navigator.clipboard.writeText(qrText).then(() => {
+        const btn = document.getElementById('copy-btn');
+        btn.textContent = 'Copiado!';
+        btn.classList.add("copied");
+        setTimeout(() => {
+          btn.textContent = 'Copiar';
+          btn.classList.remove("copied");
+        }, 2000);
+      });
+    };
+
+   
+    document.getElementById('loading-message').style.display = 'none';
+    const conteudo = document.getElementById('conteudo-pix');
+    conteudo.style.display = 'block';
+    conteudo.classList.add('fade-in');
+
+    const vendaInfo = {
+      orderId: transactionHash,
+      platform: 'ParadisePagBR',
+      paymentMethod: 'pix',
+      status: 'paid',
+      createdAt: new Date().toISOString(),
+      approvedDate: new Date().toISOString(),
+      customer: {
+        name: nome,
+        email: email,
+        phone: telefone,
+        document: cpf,
+        country: 'BR'
+      },
+      products: [{
+        id: 'produto1',
+        name: 'Produto PIX',
+        quantity: 1,
+        priceInCents: VALOR_PAGAMENTO
+      }],
+      trackingParameters: utmObj,
+      commission: {
+        totalPriceInCents: VALOR_PAGAMENTO,
+        gatewayFeeInCents: 0,
+        userCommissionInCents: VALOR_PAGAMENTO
+      }
+    };
+
+    window.__verificaStatusInterval__ = setInterval(() => {
+      verificarStatus(transactionHash);
+    }, 2000);
+  })
+  .catch(err => {
+    document.getElementById('confirm-text').innerText = 'Erro ao gerar cobrança.';
+    console.error(err);
+  });
+};
+
+  </script>
+
+
+<script>
+  // Garante que o script rode assim que o DOM estiver pronto
+  document.addEventListener("DOMContentLoaded", function () {
+    // Adiciona um estado falso ao histórico
+    window.history.pushState(null, "", window.location.href);
+
+    window.addEventListener("popstate", function () {
+      // Quando o usuário tentar voltar, mantém ele na mesma página
+      window.history.pushState(null, "", window.location.href);
+
+      // E recarrega a página com o mesmo QR code (caso ele tente voltar)
+      location.reload();
+    });
+  });
+</script>
+
+</body>
+</html>
